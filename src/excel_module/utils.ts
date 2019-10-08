@@ -97,8 +97,3 @@ export const replaceChildren = (parent: { delSlice: (arg0: number, arg1: any) =>
 export const getCurrentRow = function (row: { attrib: { r: string; }; }, rowsInserted: number) {
     return parseInt(row.attrib.r, 10) + rowsInserted;
 };
-
-export const placeholderToObject = (env: any, s: string) => {
-    const l = s.split('.');
-    
-};
