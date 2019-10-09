@@ -4,9 +4,10 @@ import ab from 'to-array-buffer';
 class templateDB {
     db: { [s: string]: Buffer; };
     loadedDB: { [s: string]: XlsxTemplate; };
+    
     constructor() {
         this.db = {};
-        this.loadedDB={};
+        this.loadedDB = {};
     }
 
     addTemplate = (name: string, data: Buffer) => {
@@ -19,7 +20,8 @@ class templateDB {
         template.sheets.forEach((sheet: { id: number; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
     }
-    getPlaceholder = (name:string) => this.loadedDB[name].getAllPlaceholders();
+
+    getPlaceholder = (name: string) => this.loadedDB[name].getAllPlaceholders();
 }
 
 export default templateDB;
