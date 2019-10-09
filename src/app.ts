@@ -39,7 +39,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
     let failed = [];
     for (const element of req.body) {
         try {
-            const stream = await minio.getObject(element.bucket_name, element.template_name);
+            const stream = await minio.getObject(element.bucket_name, element.template_path);
             const b = await streamToBuffer(stream);
             db.addTemplate(element.template_name, b);
             success.push(element.template_name)
