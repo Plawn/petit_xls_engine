@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const _get_simple = (obj, desc) => {
     if (desc.indexOf("[") >= 0) {
-        var specification = desc.split(/[[[\]]/);
-        var property = specification[0];
-        var index = specification[1];
+        const specification = desc.split(/[[[\]]/);
+        const property = specification[0];
+        const index = specification[1];
         return obj[property][index];
     }
     return obj[desc];
@@ -29,7 +29,7 @@ exports._get = (obj, desc, defaultValue) => {
 // Split a reference into an object with keys `row` and `col` and,
 // optionally, `table`, `rowAbsolute` and `colAbsolute`.
 exports.splitRef = function (ref) {
-    var match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)(\$)?([0-9]+)/);
+    const match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)(\$)?([0-9]+)/);
     return {
         table: match && match[1] || null,
         colAbsolute: Boolean(match && match[2]),
@@ -45,18 +45,18 @@ exports.joinRef = ref => (ref.table ? ref.table + "!" : "") +
     (ref.rowAbsolute ? "$" : "") +
     Number(ref.row).toString();
 // Get the next row's cell reference given a reference like "B2".
-exports.nextRow = ref => {
+exports.nextRow = (ref) => {
     ref = ref.toUpperCase();
-    return ref.replace(/[0-9]+/, function (match) {
+    return ref.replace(/[0-9]+/, match => {
         return (parseInt(match, 10) + 1).toString();
     });
 };
 // Turn a reference like "AA" into a number like 27
 exports.charToNum = (str) => {
-    var num = 0;
-    for (var idx = str.length - 1, iteration = 0; idx >= 0; --idx, ++iteration) {
-        var thisChar = str.charCodeAt(idx) - 64, // A -> 1; B -> 2; ... Z->26
-        multiplier = Math.pow(26, iteration);
+    let num = 0;
+    for (let idx = str.length - 1, iteration = 0; idx >= 0; --idx, ++iteration) {
+        const thisChar = str.charCodeAt(idx) - 64; // A -> 1; B -> 2; ... Z->26
+        const multiplier = Math.pow(26, iteration);
         num += multiplier * thisChar;
     }
     return num;
@@ -65,7 +65,7 @@ exports.charToNum = (str) => {
 exports.isRange = (ref) => ref.indexOf(':') !== -1;
 exports.joinRange = (range) => range.start + ":" + range.end;
 exports.splitRange = (range) => {
-    var split = range.split(":");
+    const split = range.split(":");
     return {
         start: split[0],
         end: split[1]

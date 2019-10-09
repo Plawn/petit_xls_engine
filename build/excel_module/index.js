@@ -13,8 +13,9 @@ const utils_1 = require("./utils");
 const DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument", CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain", SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings", HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 const extractPlaceholders = string => {
     // Yes, that's right. It's a bunch of brackets and question marks and stuff.
-    var re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
-    var match = null, matches = [];
+    const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
+    let match = null;
+    let matches = [];
     while ((match = re.exec(string)) !== null) {
         matches.push({
             placeholder: match[0],
@@ -30,7 +31,8 @@ const extractPlaceholders = string => {
 const numToColumnIdentifier = num => {
     let str = "";
     for (let i = 0; num > 0; ++i) {
-        let remainder = num % 26, charCode = remainder + 64;
+        const remainder = num % 26;
+        const charCode = remainder + 64;
         num = (num - remainder) / 26;
         // Compensate for the fact that we don't represent zero, e.g. A = 1, Z = 26, but AA = 27
         if (remainder === 0) { // 26 -> Z
@@ -44,7 +46,7 @@ const numToColumnIdentifier = num => {
 // Adjust the row `spans` attribute by `cellsInserted`
 const updateRowSpan = (row, cellsInserted) => {
     if (cellsInserted !== 0 && row.attrib.spans) {
-        let rowSpan = row.attrib.spans.split(':').map(function (f) { return parseInt(f, 10); });
+        let rowSpan = row.attrib.spans.split(':').map(f => parseInt(f, 10));
         rowSpan[1] += cellsInserted;
         row.attrib.spans = rowSpan.join(":");
     }
@@ -52,7 +54,7 @@ const updateRowSpan = (row, cellsInserted) => {
 // Get a list of sheet ids, names and filenames
 const loadSheets = (prefix, workbook, workbookRels) => {
     let sheets = [];
-    workbook.findall("sheets/sheet").forEach(function (sheet) {
+    workbook.findall("sheets/sheet").forEach(sheet => {
         let sheetId = sheet.attrib.sheetId, relId = sheet.attrib['r:id'], relationship = workbookRels.find("Relationship[@Id='" + relId + "']"), filename = prefix + "/" + relationship.attrib.Target;
         sheets.push({
             id: parseInt(sheetId, 10),
@@ -71,6 +73,9 @@ class Workbook {
         this.archive = null;
         this.sharedStrings = [];
         this.sharedStringsLookup = {};
+        this.sheets = [];
+        this.allPlaceholders = [];
+        this.readPlaceholders = false;
         if (data) {
             this.loadTemplate(data);
         }
@@ -79,38 +84,37 @@ class Workbook {
         * Delete unused sheets if needed
         */
     deleteSheet(sheetName) {
-        var self = this;
-        var sheet = self.loadSheet(sheetName);
-        var sh = self.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
-        self.workbook.find("sheets").remove(sh);
-        var rel = self.workbookRels.find("Relationship[@Id='" + sh.attrib['r:id'] + "']");
-        self.workbookRels.remove(rel);
-        self._rebuild();
-        return self;
+        // var self = this;
+        const sheet = this.loadSheet(sheetName);
+        const sh = this.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
+        this.workbook.find("sheets").remove(sh);
+        const rel = this.workbookRels.find("Relationship[@Id='" + sh.attrib['r:id'] + "']");
+        this.workbookRels.remove(rel);
+        this._rebuild();
+        return this;
     }
     /**
         * Clone sheets in current workbook template
         */
     copySheet(sheetName, copyName) {
-        var self = this;
-        var sheet = self.loadSheet(sheetName); //filename, name , id, root
-        var newSheetIndex = (self.workbook.findall("sheets/sheet").length + 1).toString();
-        var fileName = 'worksheets' + '/' + 'sheet' + newSheetIndex + '.xml';
-        var arcName = self.prefix + '/' + fileName;
-        self.archive.file(arcName, elementtree_1.default.tostring(sheet.root));
-        self.archive.files[arcName].options.binary = true;
-        var newSheet = elementtree_1.default.SubElement(self.workbook.find('sheets'), 'sheet');
+        const sheet = this.loadSheet(sheetName);
+        const newSheetIndex = (this.workbook.findall("sheets/sheet").length + 1).toString();
+        const fileName = 'worksheets' + '/' + 'sheet' + newSheetIndex + '.xml';
+        const arcName = this.prefix + '/' + fileName;
+        this.archive.file(arcName, elementtree_1.default.tostring(sheet.root));
+        this.archive.files[arcName].options.binary = true;
+        const newSheet = elementtree_1.default.SubElement(this.workbook.find('sheets'), 'sheet');
         newSheet.attrib.name = copyName || 'Sheet' + newSheetIndex;
         newSheet.attrib.sheetId = newSheetIndex;
         newSheet.attrib['r:id'] = 'rId' + newSheetIndex;
-        var newRel = elementtree_1.default.SubElement(self.workbookRels, 'Relationship');
+        const newRel = elementtree_1.default.SubElement(this.workbookRels, 'Relationship');
         newRel.attrib.Type = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet';
         newRel.attrib.Target = fileName;
-        self._rebuild();
+        this._rebuild();
         //    TODO: work with "definedNames" 
         //    var defn = etree.SubElement(self.workbook.find('definedNames'), 'definedName');
         //
-        return self;
+        return this;
     }
     /**
         *  Partially rebuild after copy/delete sheets
@@ -119,7 +123,7 @@ class Workbook {
         //each <sheet> 'r:id' attribute in '\xl\workbook.xml'
         //must point to correct <Relationship> 'Id' in xl\_rels\workbook.xml.rels
         var self = this;
-        var order = ['worksheet', 'theme', 'styles', 'sharedStrings'];
+        const order = ['worksheet', 'theme', 'styles', 'sharedStrings'];
         self.workbookRels.findall("*")
             .sort(function (rel1, rel2) {
             var index1 = order.indexOf(path_1.default.basename(rel1.attrib.Type));
@@ -150,11 +154,39 @@ class Workbook {
         if (Buffer.isBuffer(data)) {
             data = data.toString('binary');
         }
-        self.archive = new jszip_1.default(data, { base64: false, checkCRC32: true });
+        const t = new jszip_1.default(data, { base64: false, checkCRC32: true });
+        this.archive = t;
         // Load relationships
-        var rels = elementtree_1.default.parse(self.archive.file("_rels/.rels").asText()).getroot(), workbookPath = rels.find("Relationship[@Type='" + DOCUMENT_RELATIONSHIP + "']").attrib.Target;
+        const rels = elementtree_1.default.parse(self.archive.file("_rels/.rels").asText()).getroot();
+        const workbookPath = rels.find("Relationship[@Type='" + DOCUMENT_RELATIONSHIP + "']").attrib.Target;
         self.workbookPath = workbookPath;
         self.prefix = path_1.default.dirname(workbookPath);
+        self.workbook = elementtree_1.default.parse(self.archive.file(workbookPath).asText()).getroot();
+        self.workbookRels = elementtree_1.default.parse(self.archive.file(self.prefix + "/" + '_rels' + "/" + path_1.default.basename(workbookPath) + '.rels').asText()).getroot();
+        self.sheets = loadSheets(self.prefix, self.workbook, self.workbookRels);
+        self.calChainRel = self.workbookRels.find("Relationship[@Type='" + CALC_CHAIN_RELATIONSHIP + "']");
+        if (self.calChainRel) {
+            self.calcChainPath = self.prefix + "/" + self.calChainRel.attrib.Target;
+        }
+        self.sharedStringsPath = self.prefix + "/" + self.workbookRels.find("Relationship[@Type='" + SHARED_STRINGS_RELATIONSHIP + "']").attrib.Target;
+        self.sharedStrings = [];
+        elementtree_1.default.parse(self.archive.file(self.sharedStringsPath).asText()).getroot().findall('si').forEach(function (si) {
+            var t = { text: '' };
+            si.findall('t').forEach(function (tmp) {
+                t.text += tmp.text;
+            });
+            si.findall('r/t').forEach(function (tmp) {
+                t.text += tmp.text;
+            });
+            self.sharedStrings.push(t.text);
+            self.sharedStringsLookup[t.text] = self.sharedStrings.length - 1;
+        });
+    }
+    // not finished
+    clone() {
+        const n = new Workbook();
+        n.workbookPath = this.workbookPath; //immuit izi
+        n.prefix = this.prefix; // immut izi
         self.workbook = elementtree_1.default.parse(self.archive.file(workbookPath).asText()).getroot();
         self.workbookRels = elementtree_1.default.parse(self.archive.file(self.prefix + "/" + '_rels' + "/" + path_1.default.basename(workbookPath) + '.rels').asText()).getroot();
         self.sheets = loadSheets(self.prefix, self.workbook, self.workbookRels);
@@ -302,13 +334,13 @@ class Workbook {
          * Generate a new binary .xlsx file
          */
     generate(options) {
-        var self = this;
         if (!options) {
             options = {
                 base64: false
             };
         }
-        return self.archive.generate(options);
+        // console.log(this.archive.generate.toString());
+        return this.archive.generate(options);
     }
     // Helpers
     // Write back the new shared strings list
@@ -328,10 +360,9 @@ class Workbook {
     }
     // Add a new shared string
     addSharedString(s) {
-        var self = this;
-        var idx = self.sharedStrings.length;
-        self.sharedStrings.push(s);
-        self.sharedStringsLookup[s] = idx;
+        const idx = this.sharedStrings.length;
+        this.sharedStrings.push(s);
+        this.sharedStringsLookup[s] = idx;
         return idx;
     }
     // Get the number of a shared string, adding a new one if necessary.
@@ -346,40 +377,40 @@ class Workbook {
     // Replace a shared string with a new one at the same index. Return the
     // index.
     replaceString(oldString, newString) {
-        var self = this;
-        var idx = self.sharedStringsLookup[oldString];
+        // var self = this;
+        var idx = this.sharedStringsLookup[oldString];
         if (idx === undefined) {
-            idx = self.addSharedString(newString);
+            idx = this.addSharedString(newString);
         }
         else {
-            self.sharedStrings[idx] = newString;
-            delete self.sharedStringsLookup[oldString];
-            self.sharedStringsLookup[newString] = idx;
+            this.sharedStrings[idx] = newString;
+            delete this.sharedStringsLookup[oldString];
+            this.sharedStringsLookup[newString] = idx;
         }
         return idx;
     }
     // Get sheet a sheet, including filename and name
     loadSheet(sheet) {
-        var self = this;
-        var info = null;
-        for (var i = 0; i < self.sheets.length; ++i) {
-            if ((typeof (sheet) === "number" && self.sheets[i].id === sheet) || (self.sheets[i].name === sheet)) {
-                info = self.sheets[i];
+        // var self = this;
+        let info = null;
+        for (var i = 0; i < this.sheets.length; ++i) {
+            if ((typeof (sheet) === "number" && this.sheets[i].id === sheet) || (this.sheets[i].name === sheet)) {
+                info = this.sheets[i];
                 break;
             }
         }
         if (info === null && (typeof (sheet) === "number")) {
             //Get the sheet that corresponds to the 0 based index if the id does not work
-            info = self.sheets[sheet - 1];
+            info = this.sheets[sheet - 1];
         }
         if (info === null) {
-            throw new Error("Sheet " + sheet + " not found");
+            throw new Error(`Sheet ${sheet} not found`);
         }
         return {
             filename: info.filename,
             name: info.name,
             id: info.id,
-            root: elementtree_1.default.parse(self.archive.file(info.filename).asText()).getroot()
+            root: elementtree_1.default.parse(this.archive.file(info.filename).asText()).getroot()
         };
     }
     // Load tables for a given sheet
@@ -392,7 +423,7 @@ class Workbook {
         if (relsFile === null) {
             return tables;
         }
-        var rels = elementtree_1.default.parse(relsFile.asText()).getroot();
+        const rels = elementtree_1.default.parse(relsFile.asText()).getroot();
         sheet.findall("tableParts/tablePart").forEach(tablePart => {
             const relationshipId = tablePart.attrib['r:id'];
             const target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target;
@@ -443,10 +474,9 @@ class Workbook {
         utils_1.replaceChildren(rels, newRelationships);
         this.archive.file(relsFilename, elementtree_1.default.tostring(rels));
     }
-    getAllPlaceholder(sheetName) {
-        const self = this;
+    getPlaceholdersOneSheet(sheetName) {
         const placeholders = [];
-        const sheet = self.loadSheet(sheetName);
+        const sheet = this.loadSheet(sheetName);
         let cellsInserted = 0;
         let sheetData = sheet.root.find("sheetData");
         let currentRow = null;
@@ -457,13 +487,14 @@ class Workbook {
             rows.push(row);
             row.findall("c").forEach(cell => {
                 let appendCell = true;
-                cell.attrib.r = self.getCurrentCell(cell, currentRow, cellsInserted);
+                cell.attrib.r = this.getCurrentCell(cell, currentRow, cellsInserted);
                 // If c[@t="s"] (string column), look up /c/v@text as integer in
                 // `this.sharedStrings`
                 if (cell.attrib.t === "s") {
                     // Look for a shared string that may contain placeholders
-                    const cellValue = cell.find("v"), stringIndex = parseInt(cellValue.text, 10);
-                    const s = self.sharedStrings[stringIndex];
+                    const cellValue = cell.find("v");
+                    const stringIndex = parseInt(cellValue.text, 10);
+                    const s = this.sharedStrings[stringIndex];
                     if (s === undefined) {
                         return;
                     }
@@ -476,6 +507,16 @@ class Workbook {
             });
         });
         return placeholders;
+    }
+    getAllPlaceholders() {
+        if (this.readPlaceholders)
+            return this.allPlaceholders;
+        const placeholders = [];
+        this.sheets
+            .forEach(sheet => placeholders.push(...this.getPlaceholdersOneSheet(sheet.id)));
+        this.readPlaceholders = true;
+        this.allPlaceholders = placeholders;
+        return this.allPlaceholders;
     }
     // Perform substitution in table headers
     substituteTableColumnHeaders(tables, substitutions) {

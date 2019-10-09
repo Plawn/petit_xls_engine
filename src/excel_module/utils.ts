@@ -2,9 +2,9 @@
 
 const _get_simple = (obj: { [x: string]: any; }, desc: string) => {
     if (desc.indexOf("[") >= 0) {
-        var specification = desc.split(/[[[\]]/);
-        var property = specification[0];
-        var index = specification[1];
+        const specification = desc.split(/[[[\]]/);
+        const property = specification[0];
+        const index = specification[1];
         return obj[property][index];
     }
     return obj[desc];
@@ -30,8 +30,8 @@ export const _get = (obj: { [x: string]: any; }, desc: string, defaultValue: str
 
 // Split a reference into an object with keys `row` and `col` and,
 // optionally, `table`, `rowAbsolute` and `colAbsolute`.
-export const splitRef = function (ref) {
-    var match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)(\$)?([0-9]+)/);
+export const splitRef = function (ref: string) {
+    const match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)(\$)?([0-9]+)/);
     return {
         table: match && match[1] || null,
         colAbsolute: Boolean(match && match[2]),
@@ -50,34 +50,34 @@ export const joinRef = ref =>
     Number(ref.row).toString();
 
 // Get the next row's cell reference given a reference like "B2".
-export const nextRow = ref => {
+export const nextRow = (ref: string) => {
     ref = ref.toUpperCase();
-    return ref.replace(/[0-9]+/, function (match) {
+    return ref.replace(/[0-9]+/, match => {
         return (parseInt(match, 10) + 1).toString();
     });
 };
 
 // Turn a reference like "AA" into a number like 27
 export const charToNum = (str: string) => {
-    var num = 0;
-    for (var idx = str.length - 1, iteration = 0; idx >= 0; --idx, ++iteration) {
-        var thisChar = str.charCodeAt(idx) - 64, // A -> 1; B -> 2; ... Z->26
-            multiplier = Math.pow(26, iteration);
+    let num = 0;
+    for (let idx = str.length - 1, iteration = 0; idx >= 0; --idx, ++iteration) {
+        const thisChar = str.charCodeAt(idx) - 64 // A -> 1; B -> 2; ... Z->26
+        const multiplier = Math.pow(26, iteration);
         num += multiplier * thisChar;
     }
     return num;
 };
 
 // Is ref a range?
-export const isRange = (ref: { indexOf: (arg0: string) => number; }) => ref.indexOf(':') !== -1;
+export const isRange = (ref: string) => ref.indexOf(':') !== -1;
 
 
-export const joinRange = (range: { start: any; end: any; }) => range.start + ":" + range.end;
+export const joinRange = (range: { start: string; end: string; }) => range.start + ":" + range.end;
 
 
 
-export const splitRange = (range: { split: (arg0: string) => void; }) => {
-    var split = range.split(":");
+export const splitRange = (range: string) => {
+    const split = range.split(":");
     return {
         start: split[0],
         end: split[1]
