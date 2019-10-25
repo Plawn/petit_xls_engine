@@ -35,8 +35,8 @@ app.post('/documents', (req, res) => res.send(db.getPlaceholder(req.body.name)))
 
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
-    let success = [];
-    let failed = [];
+    const success = [];
+    const failed = [];
     for (const element of req.body) {
         try {
             const stream = await minio.getObject(element.bucket_name, element.template_path);
