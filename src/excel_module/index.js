@@ -97,7 +97,11 @@ const loadSheets = (prefix, workbook, workbookRels) => {
 
 
 
-
+export const makeWorkbook = async (data) => {
+    const w = new Workbook();
+    await w.loadTemplate(data);
+    return w;
+}
 
 /**
      * Create a new workbook. Either pass the raw data of a .xlsx file,
@@ -191,6 +195,7 @@ export default class Workbook {
             data = data.toString('binary');
         }
         const t = new zip(data, { base64: false, checkCRC32: true });
+        // const t = await zip.loadAsync(data);
         this.archive = t;
         // Load relationships
         const rels = etree.parse(self.archive.file("_rels/.rels").asText()).getroot(), ;

@@ -35,7 +35,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
         try {
             const stream = await config.minio.getObject(element.bucket_name, element.template_name);
             const b = await streamToBuffer(stream);
-            db.addTemplate(element.template_name, b);
+            await db.addTemplate(element.template_name, b);
             success.push(element.template_name)
         } catch (e) {
             console.warn(e);
