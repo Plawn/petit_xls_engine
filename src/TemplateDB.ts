@@ -5,10 +5,12 @@ import { SafeMap } from './utils';
 class templateDB {
     db: SafeMap<string, Buffer>;
     loadedDB: SafeMap<string, XlsxTemplate>;
+    placeHolders: SafeMap<string, any>;
 
     constructor() {
-        this.db = new SafeMap<string, Buffer>();
-        this.loadedDB = new SafeMap<string, XlsxTemplate>();
+        this.db = new SafeMap();
+        this.loadedDB = new SafeMap();
+        this.placeHolders = new SafeMap();
     }
 
     addTemplate = (name: string, data: Buffer) => {
@@ -22,7 +24,15 @@ class templateDB {
         return Buffer.from(ab(template.generate()));
     }
 
-    getPlaceholder = (name: string) => this.loadedDB.safeGet(name).getAllPlaceholders();
+    getPlaceholder = (name: string) => {
+        if (!this.placeHolders.has(name)) {
+            const res = this.loadedDB.safeGet(name).getAllPlaceholders();
+            this.placeHolders.set(name, res);
+            return res;
+        }
+        return this.placeHolders.get(name);
+
+    };
 }
 
 export default templateDB;

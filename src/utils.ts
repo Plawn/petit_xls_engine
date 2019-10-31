@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { minioInfosType } from './types';
 import YAML from 'js-yaml';
+import { throws } from 'assert';
 
 const readFileAsync = promisify(fs.readFile);
 

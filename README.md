@@ -5,11 +5,11 @@ This service will be behind the api-doc service behind the excel-publiposting li
 ## To start the service
  
 ```sh
-npm start
+yarn start
 ```
 or
 ```sh
-npm run-script build && node build/start.js <port> <config_file>
+yarn build && node build/start.js <port> <config_file>
 ```
 
 ## TODO
