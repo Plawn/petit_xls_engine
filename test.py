@@ -2,7 +2,7 @@ import requests
 
 
 t = [
-    {'bucket_name': 'new-templates', 'template_name': 'ndf.xlsx', 'output': 'DDE.docx'}
+    {'bucket_name': 'new-templates', 'template_name': 'ndf.xlsx'}
 ]
 
 res = requests.post('http://localhost:3001/load_templates', json=t)

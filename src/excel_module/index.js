@@ -208,7 +208,7 @@ export default class Workbook {
         self.sharedStringsPath = self.prefix + "/" + self.workbookRels.find("Relationship[@Type='" + SHARED_STRINGS_RELATIONSHIP + "']").attrib.Target;
         self.sharedStrings = [];
         etree.parse(self.archive.file(self.sharedStringsPath).asText()).getroot().findall('si').forEach(function (si) {
-            var t = { text: '' };
+            const t = { text: '' };
             si.findall('t').forEach(function (tmp) {
                 t.text += tmp.text;
             });

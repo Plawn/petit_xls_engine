@@ -2,13 +2,24 @@
 
 This service will be behind the api-doc service behind the excel-publiposting lib
 
+## To start the service
+ 
+```sh
+npm start
+```
+or
+```sh
+npm run-script build && node build/start.js <port> <config_file>
+```
 
-
-# TODO
+## TODO
 
 - make better object copy in order to reduce latency and cpu usage
 - make Dockerfile
 - make docker-compose
+
+This app should run in the end in the same container as the main api-doc service and should be hidden from the other applications
+This app should only be queried by the main api-doc app
 
 
 ## Endpoints
@@ -41,7 +52,6 @@ This service will be controlled by the global publiposting service, so we have t
 You need to send:
 ```json
 {
-    "template_path":"<name>",
     "template_name":"<name>",
     "bucket_name":"<name>"
 }
