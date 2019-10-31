@@ -32,3 +32,12 @@ export const getConfig = async (filename: string) => {
   }
   return minioInfos;
 }
+
+
+export class SafeMap<T, U> extends Map<T, U> {
+  safeGet = (key:any) => {
+    const res = this.get(key);
+    if (!res) throw new Error(`${key} not found`);
+    return res;
+  }
+}
