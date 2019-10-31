@@ -5,18 +5,17 @@ import { asyncMiddleware, streamToBuffer } from './utils';
 import templateDB from './TemplateDB';
 import { reqPubli, configType, minioInfosType } from './types';
 
+const app = express();
+
 const db = new templateDB();
-
-
 const config: configType = {
     port: null,
     minio: null,
 }
 
-const app = express();
+
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
     const data: reqPubli = req.body;
