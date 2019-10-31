@@ -19,7 +19,7 @@ app.use(bodyParser.json());
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
     const data: reqPubli = req.body;
-    const rendered = await db.renderTemplate(data.template_name, data.data);
+    const rendered = db.renderTemplate(data.template_name, data.data);
     await config.minio.putObject(data.output_bucket, data.output_name, rendered);
     res.send({ error: false });
 }));

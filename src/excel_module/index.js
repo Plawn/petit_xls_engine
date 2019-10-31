@@ -20,10 +20,10 @@ import {
     getCurrentRow
 } from "./utils";
 
-const DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument",
-    CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
-    SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
-    HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
+const DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
+const CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain";
+const SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings";
+const HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
 
 const extractPlaceholders = string => {
@@ -77,13 +77,13 @@ const updateRowSpan = (row, cellsInserted) => {
 
 // Get a list of sheet ids, names and filenames
 const loadSheets = (prefix, workbook, workbookRels) => {
-    let sheets = [];
+    const sheets = [];
 
     workbook.findall("sheets/sheet").forEach(sheet => {
-        let sheetId = sheet.attrib.sheetId,
-            relId = sheet.attrib['r:id'],
-            relationship = workbookRels.find("Relationship[@Id='" + relId + "']"),
-            filename = prefix + "/" + relationship.attrib.Target;
+        const sheetId = sheet.attrib.sheetId;
+        const relId = sheet.attrib['r:id'];
+        const relationship = workbookRels.find("Relationship[@Id='" + relId + "']");
+        const filename = prefix + "/" + relationship.attrib.Target;
 
         sheets.push({
             id: parseInt(sheetId, 10),
@@ -94,14 +94,6 @@ const loadSheets = (prefix, workbook, workbookRels) => {
 
     return sheets;
 };
-
-
-
-export const makeWorkbook = async (data) => {
-    const w = new Workbook();
-    await w.loadTemplate(data);
-    return w;
-}
 
 /**
      * Create a new workbook. Either pass the raw data of a .xlsx file,
@@ -162,12 +154,12 @@ export default class Workbook {
     _rebuild() {
         //each <sheet> 'r:id' attribute in '\xl\workbook.xml'
         //must point to correct <Relationship> 'Id' in xl\_rels\workbook.xml.rels
-        var self = this;
+        let self = this;
         const order = ['worksheet', 'theme', 'styles', 'sharedStrings'];
         self.workbookRels.findall("*")
             .sort(function (rel1, rel2) {
-                var index1 = order.indexOf(path.basename(rel1.attrib.Type));
-                var index2 = order.indexOf(path.basename(rel2.attrib.Type));
+                const index1 = order.indexOf(path.basename(rel1.attrib.Type));
+                const index2 = order.indexOf(path.basename(rel2.attrib.Type));
                 if ((index1 + index2) == 0) {
                     if (rel1.attrib.Id && rel2.attrib.Id)
                         return rel1.attrib.Id.substring(3) - rel2.attrib.Id.substring(3);

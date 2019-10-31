@@ -1,4 +1,4 @@
-import XlsxTemplate, {makeWorkbook} from './excel_module';
+import XlsxTemplate from './excel_module';
 import ab from 'to-array-buffer';
 import { SafeMap } from './utils';
 
@@ -11,14 +11,13 @@ class templateDB {
         this.loadedDB = new SafeMap<string, XlsxTemplate>();
     }
 
-    addTemplate = async (name: string, data: Buffer) => {
+    addTemplate = (name: string, data: Buffer) => {
         this.db.set(name, data);
-        const w = await makeWorkbook(data);
-        this.loadedDB.set(name, w);
+        this.loadedDB.set(name, new XlsxTemplate(data));
     }
 
-    renderTemplate = async (filename: string, data: any) => {
-        const template = await makeWorkbook(this.db.safeGet(filename));
+    renderTemplate = (filename: string, data: any) => {
+        const template = new XlsxTemplate(this.db.safeGet(filename));
         template.sheets.forEach((sheet: { id: number; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
     }
