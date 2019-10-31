@@ -3,13 +3,13 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { minioInfosType } from './types';
 import YAML from 'js-yaml';
-import { throws } from 'assert';
 
 const readFileAsync = promisify(fs.readFile);
 
 export const asyncMiddleware = fn =>
   (req, res, next) => {
-    Promise.resolve(fn(req, res, next))
+    Promise
+      .resolve(fn(req, res, next))
       .catch(next);
   };
 
@@ -36,7 +36,7 @@ export const getConfig = async (filename: string) => {
 
 
 export class SafeMap<T, U> extends Map<T, U> {
-  safeGet = (key:any) => {
+  safeGet = (key: any) => {
     const res = this.get(key);
     if (!res) throw new Error(`${key} not found`);
     return res;
