@@ -2,10 +2,9 @@
     "compilerOptions": {
       "module": "commonjs",
       "esModuleInterop": true,
-      "target": "es6",
+      "target": "esnext",
       "moduleResolution": "node",
       "outDir": "build",
       "allowJs": true
     },
-    "lib": ["es2015"]
   }
