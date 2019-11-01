@@ -19,7 +19,9 @@ const main = async () => {
     const minioInfos = await getConfig(filename);
     
     
-    app(port, minioInfos);
+    app(port, minioInfos, ()=> {
+        process.stdout.write('started');
+    });
 };
 
 main();

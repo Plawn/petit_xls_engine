@@ -10,6 +10,9 @@ COPY . .
 
 RUN yarn build
 
+COPY package.json build/package.json
+COPY yarn.lock build/yarn.lock
+
 EXPOSE 3000
 
 ENTRYPOINT [ "node build/start.js" ]

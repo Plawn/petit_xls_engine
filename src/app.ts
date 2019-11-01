@@ -46,7 +46,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
 }));
 
 
-export default (port: number, minioInfos: minioInfosType) => {
+export default (port: number, minioInfos: minioInfosType, afterStart?: Function) => {
     config.port = port;
     app.listen(port, '127.0.0.1', async () => {
         config.minio = new Client({
@@ -57,5 +57,8 @@ export default (port: number, minioInfos: minioInfosType) => {
             secretKey: minioInfos.passkey,
         });
         console.log(`started on port ${port}`);
+        if (afterStart) {
+            afterStart();
+        }
     });
 }
