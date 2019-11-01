@@ -15,4 +15,4 @@ COPY yarn.lock build/yarn.lock
 
 EXPOSE 3000
 
-ENTRYPOINT [ "node build/start.js" ]
+ENTRYPOINT [ "node build/start.js 3000 config.yaml" ]

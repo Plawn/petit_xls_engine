@@ -25,7 +25,7 @@ app.post('/publipost', asyncMiddleware(async (req, res) => {
 }));
 
 
-app.post('/documents', (req, res) => res.send(db.getPlaceholder(req.body.name)));
+app.post('/get_placeholders', (req, res) => res.send(db.getPlaceholder(req.body.name)));
 
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
@@ -46,7 +46,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
 }));
 
 
-export default (port: number, minioInfos: minioInfosType, afterStart?: Function) => {
+export default async (port: number, minioInfos: minioInfosType, afterStart?: Function) => {
     config.port = port;
     app.listen(port, '127.0.0.1', async () => {
         config.minio = new Client({
@@ -58,7 +58,7 @@ export default (port: number, minioInfos: minioInfosType, afterStart?: Function)
         });
         console.log(`started on port ${port}`);
         if (afterStart) {
-            afterStart();
+            await afterStart();
         }
     });
 }

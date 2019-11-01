@@ -1,10 +1,12 @@
 import app from './app';
-import { getConfig } from './utils';
+import { getConfig, exec } from './utils';
 
 // Main wrapped for asyncness
 const main = async () => {
 
-    if (process.argv.length != 4){
+    let afterStart = async () => {};
+
+    if (process.argv.length < 4){
         console.log('Usage : <port> <config_file>')
         process.exit(2)
     }
@@ -18,10 +20,14 @@ const main = async () => {
     const filename = process.argv[3];
     const minioInfos = await getConfig(filename);
     
+    const command = process.argv[4];
+    if (command){
+        afterStart = async () => {
+            await exec(command);
+        }
+    }
     
-    app(port, minioInfos, ()=> {
-        process.stdout.write('started');
-    });
+    await app(port, minioInfos, afterStart);
 };
 
 main();

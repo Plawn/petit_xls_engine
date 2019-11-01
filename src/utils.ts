@@ -3,11 +3,12 @@ import { promisify } from 'util';
 import fs from 'fs';
 import { minioInfosType } from './types';
 import YAML from 'js-yaml';
+import {exec as _exec}  from 'child_process';
 
 const readFileAsync = promisify(fs.readFile);
+export const exec = promisify(_exec);
 
-export const asyncMiddleware = fn =>
-  (req, res, next) => {
+export const asyncMiddleware = fn => (req, res, next) => {
     Promise
       .resolve(fn(req, res, next))
       .catch(next);
