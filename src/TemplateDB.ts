@@ -20,7 +20,7 @@ class templateDB {
 
     renderTemplate = (filename: string, data: any) => {
         const template = new XlsxTemplate(this.db.get(filename));
-        template.sheets.forEach((sheet: { id: number; }) => template.substitute(sheet.id, data));
+        template.sheets.forEach((sheet: { id: number | string ; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
     }
 
