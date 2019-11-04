@@ -694,7 +694,7 @@ export default class Workbook {
         const stringified = this.stringify(substitution);
         if (typeof substitution === 'string' && substitution[0] === '=') {
             //substitution, started with '=' is a formula substitution
-            var formula = new etree.Element("f");
+            const formula = new etree.Element("f");
             formula.text = substitution.substr(1);
             cell.insert(1, formula);
             delete cell.attrib.t; //cellValue will be deleted later
@@ -745,19 +745,24 @@ export default class Workbook {
     // Perform a table substitution. May update `newTableRows` and `cells` and change `cell`.
     // Returns total number of new cells inserted on the original row.
     substituteTable = (row, newTableRows, cells, cell, namedTables, substitution, key) => {
-        var self = this, newCellsInserted = 0; // on the original row
+        const self = this;
+        let newCellsInserted = 0; // on the original row
         // if no elements, blank the cell, but don't delete it
         if (substitution.length === 0) {
             delete cell.attrib.t;
             replaceChildren(cell, []);
         }
         else {
-            var parentTables = namedTables.filter(function (namedTable) {
-                var range = splitRange(namedTable.root.attrib.ref);
+            const parentTables = namedTables.filter(namedTable => {
+                const range = splitRange(namedTable.root.attrib.ref);
                 return self.isWithin(cell.attrib.r, range.start, range.end);
             });
             substitution.forEach((element, idx) => {
-                var newRow, newCell, newCellsInsertedOnNewRow = 0, newCells = [], value = _get(element, key, '');
+                let newRow;
+                let newCell;
+                let newCellsInsertedOnNewRow = 0;
+                let newCells = [];
+                let value = _get(element, key, '');
                 if (idx === 0) { // insert in the row where the placeholders are
                     if (value instanceof Array) {
                         newCellsInserted = self.substituteArray(cells, cell, value);

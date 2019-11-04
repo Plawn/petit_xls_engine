@@ -30,7 +30,7 @@ data = {
     'name':'ndf.xlsx'
 }
 
-res = requests.post('http://localhost:3001/documents', json=data)
+res = requests.post('http://localhost:3001/get_placeholders', json=data)
 print(res)
 print(res.text)
 
@@ -38,6 +38,6 @@ data = {
     'name':'ndf.xlsx'
 }
 
-res = requests.post('http://localhost:3001/documents', json=data)
+res = requests.post('http://localhost:3001/get_placeholders', json=data)
 print(res)
 print(res.text)
