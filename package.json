@@ -1,14 +1,14 @@
 {
-  "name": "new_babel",
+  "name": "Excel publiposting",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "start.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node build/start.js 3001 config.yaml \"touch test_pid\"",
     "build": "tsc"
   },
-  "author": "",
+  "author": "Plawn",
   "license": "ISC",
   "devDependencies": {
     "@types/blob-to-buffer": "^1.2.0",
@@ -29,7 +29,6 @@
     "jszip": "^2.6",
     "minio": "^7.0.12",
     "mz": "^2.7.0",
-    "simple-mime": "^0.1.0",
     "to-array-buffer": "^3.2.0"
   }
 }
