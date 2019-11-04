@@ -10,9 +10,8 @@ COPY . .
 
 RUN yarn build
 
-COPY package.json build/package.json
-COPY yarn.lock build/yarn.lock
+COPY package.json yarn.lock build/
 
-EXPOSE 3000
+EXPOSE 4000
 
-ENTRYPOINT [ "node",  "build/start.js", "3000", "config.yaml" ]
+ENTRYPOINT [ "node",  "build/start.js", "4000", "config.yaml" ]
