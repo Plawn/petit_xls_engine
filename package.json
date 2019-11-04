@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node build/start.js 3001 config.yaml \"touch test_pid\"",
-    "build": "tsc"
+    "build": "tsc",
+    "build:prod":"CI=true tsc"
   },
   "author": "Plawn",
   "license": "ISC",

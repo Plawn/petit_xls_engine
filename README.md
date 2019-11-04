@@ -1,5 +1,7 @@
 # Excel publiposting service
 
+**Do NOT update jszip**
+
 This service will be behind the api-doc service behind the excel-publiposting lib
 
 ## To start the service
