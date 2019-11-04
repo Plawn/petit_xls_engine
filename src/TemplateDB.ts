@@ -19,19 +19,18 @@ class templateDB {
     }
 
     renderTemplate = (filename: string, data: any) => {
-        const template = new XlsxTemplate(this.db.safeGet(filename));
+        const template = new XlsxTemplate(this.db.get(filename));
         template.sheets.forEach((sheet: { id: number; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
     }
 
     getPlaceholder = (name: string) => {
         if (!this.placeHolders.has(name)) {
-            const res = this.loadedDB.safeGet(name).getAllPlaceholders();
+            const res = this.loadedDB.get(name).getAllPlaceholders();
             this.placeHolders.set(name, res);
             return res;
         }
         return this.placeHolders.get(name);
-
     };
 }
 

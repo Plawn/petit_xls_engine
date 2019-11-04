@@ -37,8 +37,9 @@ export const getConfig = async (filename: string) => {
 
 
 export class SafeMap<T, U> extends Map<T, U> {
-  safeGet = (key: any) => {
-    const res = this.get(key);
+  _get: (<T>(key: T) => U) = Map.prototype.get
+  get = (key: T) => {
+    const res = this._get(key);
     if (!res) throw new Error(`${key} not found`);
     return res;
   }
