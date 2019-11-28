@@ -7,9 +7,12 @@ import { reqPubli, configType, minioInfosType } from './types';
 
 const app = express();
 
+let configured = false;
+
+
 const db = new templateDB();
+
 const config: configType = {
-    port: null,
     minio: null,
 }
 
@@ -18,6 +21,9 @@ const config: configType = {
 app.use(bodyParser.json());
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
+    if (!configured) {
+        return res.send({ error: true });
+    }
     const data: reqPubli = req.body;
     const rendered = db.renderTemplate(data.template_name, data.data);
     await config.minio.putObject(data.output_bucket, data.output_name, rendered);
@@ -25,10 +31,18 @@ app.post('/publipost', asyncMiddleware(async (req, res) => {
 }));
 
 
-app.post('/get_placeholders', (req, res) => res.send(db.getPlaceholder(req.body.name)));
+app.post('/get_placeholders', (req, res) => {
+    if (!configured) {
+        return res.send({ error: true });
+    }
+    res.send(db.getPlaceholder(req.body.name))
+});
 
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
+    if (!configured) {
+        return res.send({ error: true });
+    }
     const success = [];
     const failed = [];
     for (const element of req.body) {
@@ -45,20 +59,22 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
     res.send({ success: success, failed: failed });
 }));
 
+// using this endpoint the app will be configured
+app.post('/configure', asyncMiddleware(async (req, res) => {
+    config.minio = new Client({
+        endPoint: req.body.endpoint,
+        port: 443,
+        useSSL: true,
+        accessKey: req.body.access_key,
+        secretKey: req.body.passkey,
+    });
+    configured = true;
+    res.send({ error: false });
+}));
 
-export default async (port: number, minioInfos: minioInfosType, afterStart?: Function) => {
-    config.port = port;
-    app.listen(port, '127.0.0.1', async () => {
-        config.minio = new Client({
-            endPoint: minioInfos.endpoint,
-            port: 443,
-            useSSL: true,
-            accessKey: minioInfos.access_key,
-            secretKey: minioInfos.passkey,
-        });
+
+export default async (port: number) => {
+    app.listen(port, async () => {
         console.log(`started on port ${port}`);
-        if (afterStart) {
-            await afterStart();
-        }
     });
 }
