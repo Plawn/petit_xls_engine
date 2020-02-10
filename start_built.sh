@@ -1,1 +1,1 @@
-node build/start.js 3001 config.yaml
+node build/start.js 3001
