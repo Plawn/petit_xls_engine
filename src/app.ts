@@ -6,19 +6,14 @@ import templateDB from './TemplateDB';
 import { reqPubli, configType, minioInfosType } from './types';
 
 const app = express();
+app.use(bodyParser.json());
 
 let configured = false;
-
-
 const db = new templateDB();
-
 const config: configType = {
     minio: null,
 }
 
-
-
-app.use(bodyParser.json());
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
     if (!configured) {
@@ -70,7 +65,7 @@ app.post('/configure', asyncMiddleware(async (req, res) => {
     });
     configured = true;
     res.send({ error: false });
-    console.log('Sucessfuly configured');
+    console.log('Successfuly configured');
 }));
 
 
