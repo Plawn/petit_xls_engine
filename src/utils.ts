@@ -6,6 +6,11 @@ export const asyncMiddleware = fn => (req, res, next) => {
     .catch(next);
 };
 
+export const portFromUrl = (host: string) => {
+  let i = host.indexOf(':');
+  return Number(host.slice(i + 1, -1).split('/')[0]);
+}
+
 
 export const streamToBuffer = (stream: Stream) => {
   return new Promise<Buffer>((resolve, reject) => {
