@@ -57,7 +57,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
 // using this endpoint the app will be configured
 app.post('/configure', asyncMiddleware(async (req, res) => {
     config.minio = new MinioClient({
-        endPoint: req.body.endpoint,
+        endPoint: req.body.endpoint.split(':')[0],
         port: portFromUrl(req.body.endpoint),
         useSSL: req.body.secure,
         accessKey: req.body.access_key,
