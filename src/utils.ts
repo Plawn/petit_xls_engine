@@ -1,6 +1,7 @@
 import { Stream } from 'stream';
+import { Response, Request, NextFunction } from 'express';
 
-export const asyncMiddleware = fn => (req, res, next) => {
+export const asyncMiddleware = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => (req: Request, res: Response, next: NextFunction) => {
   Promise
     .resolve(fn(req, res, next))
     .catch(next);
