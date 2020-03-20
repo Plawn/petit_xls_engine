@@ -11,13 +11,13 @@ app.use(bodyParser.json());
 let configured = false;
 const db = new templateDB();
 const config: configType = {
-    minio: null,
+    minio: undefined,
 }
 
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
     if (!configured) {
-        return res.send({ error: true });
+        return res.status(402).send({ error: true });
     }
     const data: reqPubli = req.body;
     const rendered = db.renderTemplate(data.template_name, data.data);
@@ -28,7 +28,7 @@ app.post('/publipost', asyncMiddleware(async (req, res) => {
 
 app.post('/get_placeholders', (req, res) => {
     if (!configured) {
-        return res.send({ error: true });
+        return res.status(402).send({ error: true });
     }
     res.send(db.getPlaceholder(req.body.name))
 });
@@ -36,7 +36,7 @@ app.post('/get_placeholders', (req, res) => {
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
     if (!configured) {
-        return res.send({ error: true });
+        return res.status(402).send({ error: true });
     }
     const success = [];
     const failed = [];
@@ -56,19 +56,34 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
 
 // using this endpoint the app will be configured
 app.post('/configure', asyncMiddleware(async (req, res) => {
-    config.minio = new MinioClient({
-        endPoint: req.body.endpoint,
-        port: portFromUrl(req.body.endpoint),
-        useSSL: req.body.secure,
-        accessKey: req.body.access_key,
-        secretKey: req.body.passkey,
-    });
-    await config.minio.listBuckets();
-    configured = true;
-    res.send({ error: false });
-    console.log('Successfuly configured');
+    try {
+        const data:minioInfosType = req.body;
+        config.minio = new MinioClient({
+            endPoint: data.host.split(':')[0],
+            port: portFromUrl(data.host),
+            useSSL: data.secure,
+            accessKey: data.access_key,
+            secretKey: data.pass_key,
+        });
+        await config.minio.listBuckets();
+        configured = true;
+        console.log('Successfuly configured');
+        res.status(200).send({ error: false });
+    } catch (e) {
+        configured = false;
+        config.minio = undefined;
+        res.status(402).send({ error: true });
+        console.error(e);
+    }
 }));
 
+app.get('/live', (_, res) => {
+    if (configured) {
+        res.status(200).send('OK');
+    } else {
+        res.status(402).send('KO');
+    }
+});
 
 export default async (port: number) => {
     app.listen(port, async () => {

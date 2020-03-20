@@ -22,7 +22,8 @@ export type configType = {
 
 
 export type minioInfosType = {
-    endpoint:string;
-    passkey:string;
+    host:string;
+    pass_key:string;
     access_key:string;
+    secure:boolean;
 }
