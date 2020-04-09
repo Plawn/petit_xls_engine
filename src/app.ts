@@ -8,7 +8,6 @@ import { reqPubli, configType, minioInfosType, reqPullTemplate } from './types';
 const app = express();
 app.use(bodyParser.json());
 
-let configured = false;
 const db = new templateDB();
 const config: configType = {
     minio: undefined,
@@ -16,7 +15,7 @@ const config: configType = {
 
 
 app.post('/publipost', asyncMiddleware(async (req, res) => {
-    if (!configured) {
+    if (!config.minio) {
         return res.status(402).send({ error: true });
     }
     const data: reqPubli = req.body;
@@ -28,7 +27,7 @@ app.post('/publipost', asyncMiddleware(async (req, res) => {
 
 
 app.post('/get_placeholders', (req, res) => {
-    if (!configured) {
+    if (!config.minio) {
         return res.status(402).send({ error: true });
     }
     res.send(db.getPlaceholder(req.body.name))
@@ -52,7 +51,7 @@ app.delete('/remove_template', (req, res) => {
 });
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
-    if (!configured) {
+    if (!config.minio) {
         return res.status(402).send({ error: true });
     }
     const success = [];
@@ -84,11 +83,9 @@ app.post('/configure', asyncMiddleware(async (req, res) => {
             secretKey: data.pass_key,
         });
         await config.minio.listBuckets();
-        configured = true;
         console.log('Successfuly configured');
         res.status(200).send({ error: false });
     } catch (e) {
-        configured = false;
         config.minio = undefined;
         res.status(402).send({ error: true });
         console.error(e);
@@ -96,7 +93,7 @@ app.post('/configure', asyncMiddleware(async (req, res) => {
 }));
 
 app.get('/live', (_, res) => {
-    if (configured) {
+    if (config.minio) {
         res.status(200).send('OK');
     } else {
         res.status(402).send('KO');
