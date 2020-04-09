@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import { Client as MinioClient } from 'minio';
 import { asyncMiddleware, streamToBuffer, portFromUrl } from './utils';
 import templateDB from './TemplateDB';
-import { reqPubli, configType, minioInfosType } from './types';
+import { reqPubli, configType, minioInfosType, reqPullTemplate } from './types';
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +21,7 @@ app.post('/publipost', asyncMiddleware(async (req, res) => {
     }
     const data: reqPubli = req.body;
     const rendered = db.renderTemplate(data.template_name, data.data);
+    // could have some abstraction here
     await config.minio.putObject(data.output_bucket, data.output_name, rendered);
     res.send({ error: false });
 }));
@@ -33,6 +34,22 @@ app.post('/get_placeholders', (req, res) => {
     res.send(db.getPlaceholder(req.body.name))
 });
 
+app.get('/list', (req, res) => {
+    const result = {};
+    db.templates.forEach((value, key)=>{
+        result[key] = value.pulled_at;
+    });
+    res.send(result);
+});
+
+app.delete('/remove_template', (req, res) => {
+    try {
+        db.removeTemplate(req.body.template_name);
+        res.status(200).send({ error: false });
+    } catch (e) {
+        res.status(400).send({ error: true });
+    }
+});
 
 app.post('/load_templates', asyncMiddleware(async (req, res) => {
     if (!configured) {
@@ -40,7 +57,8 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
     }
     const success = [];
     const failed = [];
-    for (const element of req.body) {
+    const body: reqPullTemplate = req.body;
+    for (const element of body) {
         try {
             const stream = await config.minio.getObject(element.bucket_name, element.template_name);
             const b = await streamToBuffer(stream);
@@ -51,13 +69,13 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
             failed.push(element.template_name)
         }
     }
-    res.send({ success: success, failed: failed });
+    res.send({ success, failed });
 }));
 
 // using this endpoint the app will be configured
 app.post('/configure', asyncMiddleware(async (req, res) => {
     try {
-        const data:minioInfosType = req.body;
+        const data: minioInfosType = req.body;
         config.minio = new MinioClient({
             endPoint: data.host.split(':')[0],
             port: portFromUrl(data.host),

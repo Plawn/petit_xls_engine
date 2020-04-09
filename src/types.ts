@@ -7,6 +7,10 @@ export type reqPubli = {
     output_bucket:string;
 }
 
+export type reqPullTemplate = {
+    template_name:string;
+    bucket_name:string;
+}[];
 
 export type template = {
     bucket_name: string;

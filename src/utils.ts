@@ -1,15 +1,16 @@
 import { Stream } from 'stream';
 import { Response, Request, NextFunction } from 'express';
 
-export const asyncMiddleware = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => (req: Request, res: Response, next: NextFunction) => {
-  Promise
-    .resolve(fn(req, res, next))
-    .catch(next);
-};
+export const asyncMiddleware = (fn: (req: Request, res: Response, next: NextFunction)=> Promise<any>) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise
+      .resolve(fn(req, res, next))
+      .catch(next);
+  };
 
 export const portFromUrl = (host: string) => {
   let i = host.indexOf(':');
-  return Number(host.slice(i + 1, -1).split('/')[0]);
+  return Number(host.slice(i + 1).split('/')[0]);
 }
 
 
