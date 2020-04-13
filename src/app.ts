@@ -35,7 +35,7 @@ app.post('/get_placeholders', (req, res) => {
 
 app.get('/list', (req, res) => {
     const result = {};
-    db.templates.forEach((value, key)=>{
+    db.templates.forEach((value, key) => {
         result[key] = value.pulled_at;
     });
     res.send(result);
@@ -61,13 +61,17 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
         try {
             const stream = await config.minio.getObject(element.bucket_name, element.template_name);
             const b = await streamToBuffer(stream);
-            await db.addTemplate(element.template_name, b);
-            success.push(element.template_name)
+            await db.addTemplate(element.exposed_as, b);
+            success.push({
+                template_name: element.exposed_as,
+                fields: db.getPlaceholder(element.exposed_as)
+            });
         } catch (e) {
             console.warn(e);
-            failed.push(element.template_name)
+            failed.push({ template_name: element.exposed_as });
         }
     }
+    console.log('loaded templates', { success, failed });
     res.send({ success, failed });
 }));
 
