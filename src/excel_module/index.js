@@ -38,7 +38,7 @@ const extractPlaceholders = (string, delimiters) => {
     // Yes, that's right. It's a bunch of brackets and question marks and stuff.
     // const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
     const {start, end} = delimiters;
-    const re = new RegExp(quoteRegex(start) + '(?:(.+?):)?(.+?)(?:\.(.+?))?' + quoteRegex(end), 'g');
+    const re = new RegExp(quoteRegex(start) + '(?:(.+?):)?(.+?)(?:\\.(.+?))?' + quoteRegex(end), 'g');
 
     let match = null
     let matches = [];
