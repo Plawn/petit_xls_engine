@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node build/start.js 3001",
     "build": "tsc",
-    "build:prod":"CI=true tsc"
+    "build:prod": "CI=true tsc"
   },
   "author": "Plawn",
   "license": "ISC",
@@ -21,6 +21,7 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
+    "@types/elementtree": "^0.1.0",
     "blob-to-buffer": "^1.2.8",
     "elementtree": "^0.1.7",
     "express": "^4.17.1",

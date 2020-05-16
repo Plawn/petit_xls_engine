@@ -97,3 +97,8 @@ export const replaceChildren = (parent: { delSlice: (arg0: number, arg1: any) =>
 export const getCurrentRow = function (row: { attrib: { r: string; }; }, rowsInserted: number) {
     return parseInt(row.attrib.r, 10) + rowsInserted;
 };
+
+
+export const quoteRegex = function (str: string) {
+    return str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
+};
