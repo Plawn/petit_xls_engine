@@ -16,14 +16,14 @@ export const portFromUrl = (host: string) => {
 }
 
 
-export const streamToBuffer = (stream: Stream) =>
-  new Promise<Buffer>((resolve, reject) => {
-    const buffers = [];
+export const streamToBuffer = (stream: Stream) => {
+  return new Promise<Buffer>((resolve, reject) => {
+    let buffers = [];
     stream.on('error', reject);
-    stream.on('data', data => buffers.push(data))
+    stream.on('data', (data) => buffers.push(data))
     stream.on('end', () => resolve(Buffer.concat(buffers)))
   });
-
+}
 
 export class SafeMap<T, U> extends Map<T, U> {
   _get: (<T>(key: T) => U) = Map.prototype.get
