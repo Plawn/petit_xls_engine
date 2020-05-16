@@ -17,7 +17,8 @@ import {
     joinRange,
     splitRange,
     replaceChildren,
-    getCurrentRow
+    getCurrentRow,
+    quoteRegex,
 } from "./utils";
 
 const DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
@@ -25,10 +26,16 @@ const CALC_CHAIN_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocumen
 const SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings";
 const HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
-
-const extractPlaceholders = string => {
+/**
+ * 
+ * @param {string} string 
+ * @param {{start:string;end:string}} delimiters
+ */
+const extractPlaceholders = (string, delimiters) => {
     // Yes, that's right. It's a bunch of brackets and question marks and stuff.
-    const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
+    // const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
+    const {start, end} = delimiters;
+    const re = new RegExp(quoteRegex(start) + '(?:(.+?):)?(.+?)(?:\.(.+?))?' + quoteRegex(end), 'g');
 
     let match = null
     let matches = [];
@@ -45,7 +52,17 @@ const extractPlaceholders = string => {
     return matches;
 };
 
-
+// Is ref inside the table defined by startRef and endRef?
+const isWithin = (ref, startRef, endRef) => {
+    const start = splitRef(startRef)
+    const end = splitRef(endRef);
+    const target = splitRef(ref);
+    start.col = charToNum(start.col);
+    end.col = charToNum(end.col);
+    target.col = charToNum(target.col);
+    return (start.row <= target.row && target.row <= end.row &&
+        start.col <= target.col && target.col <= end.col);
+}
 
 
 // Turn a number like 27 into a reference like "AA"
@@ -76,24 +93,20 @@ const updateRowSpan = (row, cellsInserted) => {
 };
 
 // Get a list of sheet ids, names and filenames
-const loadSheets = (prefix, workbook, workbookRels) => {
-    const sheets = [];
-
-    workbook.findall("sheets/sheet").forEach(sheet => {
+const loadSheets = (prefix, workbook, workbookRels) =>
+    workbook.findall("sheets/sheet").map(sheet => {
         const sheetId = sheet.attrib.sheetId;
         const relId = sheet.attrib['r:id'];
         const relationship = workbookRels.find("Relationship[@Id='" + relId + "']");
         const filename = prefix + "/" + relationship.attrib.Target;
 
-        sheets.push({
+        return {
             id: parseInt(sheetId, 10),
             name: sheet.attrib.name,
             filename: filename
-        });
+        }
     });
 
-    return sheets;
-};
 
 const toExcelDate = (value) => Number((value.getTime() / (1000 * 60 * 60 * 24)) + 25569);
 
@@ -109,28 +122,40 @@ const cloneElement = (element, recursive) => {
     return newElement;
 }
 
+// Calculate the current cell based on asource cell, the current row index,
+// and a number of new cells that have been inserted so far
+const getCurrentCell = (cell, currentRow, cellsInserted) => {
+    const colRef = splitRef(cell.attrib.r).col;
+    const colNum = charToNum(colRef);
+    return joinRef({
+        row: currentRow,
+        col: numToColumnIdentifier(colNum + cellsInserted)
+    });
+}
+
+const defaultDelimiters = { start: '${', end: '}' };
+
 /**
      * Create a new workbook. Either pass the raw data of a .xlsx file,
      * or call `loadTemplate()` later.
      */
 export default class Workbook {
-    constructor(data) {
+    constructor(data, delimiters) {
 
         this.archive = null;
         this.sharedStrings = [];
         this.sharedStringsLookup = {};
         this.sheets = [];
-        this.allPlaceholders = [];
-        this.readPlaceholders = false;
+        this.allPlaceholders = null;
+        this.delimiters = delimiters || defaultDelimiters;
         if (data) {
             this.loadTemplate(data);
         }
     }
     /**
-        * Delete unused sheets if needed
-        */
+    * Delete unused sheets if needed
+    */
     deleteSheet(sheetName) {
-        // var self = this;
         const sheet = this.loadSheet(sheetName);
         const sh = this.workbook.find("sheets/sheet[@sheetId='" + sheet.id + "']");
         this.workbook.find("sheets").remove(sh);
@@ -140,8 +165,8 @@ export default class Workbook {
         return this;
     }
     /**
-        * Clone sheets in current workbook template
-        */
+    * Clone sheets in current workbook template
+    */
     copySheet(sheetName, copyName) {
         const sheet = this.loadSheet(sheetName);
         const newSheetIndex = (this.workbook.findall("sheets/sheet").length + 1).toString();
@@ -277,15 +302,15 @@ export default class Workbook {
         let totalColumnsInserted = 0;
         const namedTables = this.loadTables(sheet.root, sheet.filename);
         const rows = [];
-        sheetData.findall("row").forEach(function (row) {
+        sheetData.findall("row").forEach(row => {
             row.attrib.r = currentRow = getCurrentRow(row, totalRowsInserted);
             rows.push(row);
             const cells = [];
             let cellsInserted = 0;
             const newTableRows = [];
-            row.findall("c").forEach(function (cell) {
+            row.findall("c").forEach(cell => {
                 let appendCell = true;
-                cell.attrib.r = self.getCurrentCell(cell, currentRow, cellsInserted);
+                cell.attrib.r = getCurrentCell(cell, currentRow, cellsInserted);
                 // If c[@t="s"] (string column), look up /c/v@text as integer in
                 // `this.sharedStrings`
                 if (cell.attrib.t === "s") {
@@ -297,7 +322,7 @@ export default class Workbook {
                         return;
                     }
                     // Loop over placeholders
-                    extractPlaceholders(string).forEach(placeholder => {
+                    extractPlaceholders(string, this.delimiters).forEach(placeholder => {
                         // Only substitute things for which we have a substitution
                         let substitution = _get(substitutions, placeholder.name, '');
                         let newCellsInserted = 0;
@@ -484,25 +509,24 @@ export default class Workbook {
         const sheetName = path.basename(sheetFilename)
         const relsFilename = sheetDirectory + "/" + '_rels' + "/" + sheetName + '.rels'
         const relsFile = this.archive.file(relsFilename)
-        const tables = [];
         if (relsFile === null) {
-            return tables;
+            return [];
         }
         const rels = etree.parse(relsFile.asText()).getroot();
-        sheet.findall("tableParts/tablePart").forEach(tablePart => {
+        return sheet.findall("tableParts/tablePart").map(tablePart => {
             const relationshipId = tablePart.attrib['r:id']
             const target = rels.find("Relationship[@Id='" + relationshipId + "']").attrib.Target
             const tableFilename = target.replace('..', this.prefix)
             const tableTree = etree.parse(this.archive.file(tableFilename).asText());
-            tables.push({
+            return {
                 filename: tableFilename,
                 root: tableTree.getroot()
-            });
+            }
         });
-        return tables;
     }
     // Write back possibly-modified tables
-    writeTables = (tables) => tables.forEach(namedTable => this.archive.file(namedTable.filename, etree.tostring(namedTable.root)));
+    writeTables = (tables) => tables
+        .forEach(namedTable => this.archive.file(namedTable.filename, etree.tostring(namedTable.root)));
 
     //Perform substitution in hyperlinks
     substituteHyperlinks(sheetFilename, substitutions) {
@@ -523,7 +547,7 @@ export default class Workbook {
                 let target = relationship.attrib.Target;
                 //Double-decode due to excel double encoding url placeholders
                 target = decodeURI(decodeURI(target));
-                extractPlaceholders(target).forEach(placeholder => {
+                extractPlaceholders(target, this.delimiters).forEach(placeholder => {
                     const substitution = substitutions[placeholder.name];
                     if (substitution === undefined) {
                         return;
@@ -540,16 +564,15 @@ export default class Workbook {
     getPlaceholdersOneSheet = (sheetName) => {
         const placeholders = [];
         const sheet = this.loadSheet(sheetName);
-        const sheetData = sheet.root.find("sheetData")
         let cellsInserted = 0;
         let currentRow = null
         let totalRowsInserted = 0
         let rows = [];
-        sheetData.findall("row").forEach(row => {
+        sheet.root.find("sheetData").findall("row").forEach(row => {
             row.attrib.r = currentRow = getCurrentRow(row, totalRowsInserted);
             rows.push(row);
             row.findall("c").forEach(cell => {
-                cell.attrib.r = this.getCurrentCell(cell, currentRow, cellsInserted);
+                cell.attrib.r = getCurrentCell(cell, currentRow, cellsInserted);
                 if (cell.attrib.t === "s") {
                     // Look for a shared string that may contain placeholders
                     const cellValue = cell.find("v")
@@ -558,7 +581,7 @@ export default class Workbook {
                     if (s === undefined) {
                         return;
                     }
-                    const res = extractPlaceholders(s).map(p => p.placeholder.slice(2, -1));
+                    const res = extractPlaceholders(s, this.delimiters).map(p => p.placeholder.slice(2, -1));
                     if (res.length > 0) {
                         placeholders.push(...res);
                     }
@@ -569,12 +592,8 @@ export default class Workbook {
     }
 
     getAllPlaceholders = () => {
-        if (this.readPlaceholders) return this.allPlaceholders;
-        const placeholders = [];
-        this.sheets
-            .forEach(sheet => placeholders.push(...this.getPlaceholdersOneSheet(sheet.id)));
-        this.readPlaceholders = true;
-        this.allPlaceholders = placeholders;
+        if (this.allPlaceholders) return this.allPlaceholders;
+        this.allPlaceholders = this.sheets.flatMap(sheet => this.getPlaceholdersOneSheet(sheet.id));
         return this.allPlaceholders;
     }
 
@@ -592,7 +611,7 @@ export default class Workbook {
                 col.attrib.id = Number(idx).toString();
                 newColumns.push(col);
                 const name = col.attrib.name;
-                extractPlaceholders(name).forEach(placeholder => {
+                extractPlaceholders(name, this.delimiters).forEach(placeholder => {
                     var substitution = substitutions[placeholder.name];
                     if (substitution === undefined) {
                         return;
@@ -657,21 +676,9 @@ export default class Workbook {
     // Get the next column's cell reference given a reference like "B2".
     nextCol = (ref) => {
         ref = ref.toUpperCase();
-        return ref.replace(/[A-Z]+/, function (match) {
-            return numToColumnIdentifier(charToNum(match) + 1);
-        });
+        return ref.replace(/[A-Z]+/, match => numToColumnIdentifier(charToNum(match) + 1));
     }
-    // Is ref inside the table defined by startRef and endRef?
-    isWithin = (ref, startRef, endRef) => {
-        const start = splitRef(startRef)
-        const end = splitRef(endRef);
-        const target = splitRef(ref);
-        start.col = charToNum(start.col);
-        end.col = charToNum(end.col);
-        target.col = charToNum(target.col);
-        return (start.row <= target.row && target.row <= end.row &&
-            start.col <= target.col && target.col <= end.col);
-    }
+
     // Turn a value of any type into a string
     stringify = (value) => {
         if (value instanceof Date) {
@@ -755,7 +762,7 @@ export default class Workbook {
         else {
             const parentTables = namedTables.filter(namedTable => {
                 const range = splitRange(namedTable.root.attrib.ref);
-                return self.isWithin(cell.attrib.r, range.start, range.end);
+                return isWithin(cell.attrib.r, range.start, range.end);
             });
             substitution.forEach((element, idx) => {
                 let newRow;
@@ -805,7 +812,7 @@ export default class Workbook {
                         const tableRoot = namedTable.root;
                         const autoFilter = tableRoot.find("autoFilter");
                         const range = splitRange(tableRoot.attrib.ref);
-                        if (!this.isWithin(newCell.attrib.r, range.start, range.end)) {
+                        if (!isWithin(newCell.attrib.r, range.start, range.end)) {
                             range.end = nextRow(range.end);
                             tableRoot.attrib.ref = joinRange(range);
                             if (autoFilter !== null) {
@@ -820,16 +827,6 @@ export default class Workbook {
         return newCellsInserted;
     }
 
-    // Calculate the current cell based on asource cell, the current row index,
-    // and a number of new cells that have been inserted so far
-    getCurrentCell(cell, currentRow, cellsInserted) {
-        const colRef = splitRef(cell.attrib.r).col;
-        const colNum = charToNum(colRef);
-        return joinRef({
-            row: currentRow,
-            col: numToColumnIdentifier(colNum + cellsInserted)
-        });
-    }
     // Split a range like "A1:B1" into {start: "A1", end: "B1"}
     // Join into a a range like "A1:B1" an object like {start: "A1", end: "B1"}
     // Look for any merged cell or named range definitions to the right of

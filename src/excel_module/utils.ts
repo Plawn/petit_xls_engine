@@ -30,7 +30,7 @@ export const _get = (obj: { [x: string]: any; }, desc: string, defaultValue: str
 
 // Split a reference into an object with keys `row` and `col` and,
 // optionally, `table`, `rowAbsolute` and `colAbsolute`.
-export const splitRef = function (ref: string) {
+export const splitRef =  (ref: string)=> {
     const match = ref.match(/(?:(.+)!)?(\$)?([A-Z]+)(\$)?([0-9]+)/);
     return {
         table: match && match[1] || null,
@@ -42,7 +42,7 @@ export const splitRef = function (ref: string) {
 };
 
 // Join an object with keys `row` and `col` into a single reference string
-export const joinRef = ref =>
+export const joinRef = (ref:any) =>
     (ref.table ? ref.table + "!" : "") +
     (ref.colAbsolute ? "$" : "") +
     ref.col.toUpperCase() +
@@ -50,12 +50,10 @@ export const joinRef = ref =>
     Number(ref.row).toString();
 
 // Get the next row's cell reference given a reference like "B2".
-export const nextRow = (ref: string) => {
-    ref = ref.toUpperCase();
-    return ref.replace(/[0-9]+/, match => {
-        return (parseInt(match, 10) + 1).toString();
-    });
-};
+export const nextRow = (ref: string) =>
+    ref.toUpperCase().replace(/[0-9]+/, match =>
+        (parseInt(match, 10) + 1).toString());
+
 
 // Turn a reference like "AA" into a number like 27
 export const charToNum = (str: string) => {
@@ -87,13 +85,13 @@ export const splitRange = (range: string) => {
 // Replace all children of `parent` with the nodes in the list `children`
 export const replaceChildren = (parent: { delSlice: (arg0: number, arg1: any) => void; len: () => void; append: (arg0: any) => void; }, children: any[]) => {
     parent.delSlice(0, parent.len());
-    children.forEach(function (child) {
-        parent.append(child);
-    });
+    children.forEach(parent.append);
 };
 
 // Calculate the current row based on a source row and a number of new rows
 // that have been inserted above
-export const getCurrentRow = function (row: { attrib: { r: string; }; }, rowsInserted: number) {
-    return parseInt(row.attrib.r, 10) + rowsInserted;
-};
+export const getCurrentRow = (row: { attrib: { r: string; }; }, rowsInserted: number) =>
+    parseInt(row.attrib.r, 10) + rowsInserted;
+
+
+export const quoteRegex = (str:string) => str.replace(/([.?*+^$[\]\\(){}|-])/g, "\\$1");
