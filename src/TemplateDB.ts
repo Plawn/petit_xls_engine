@@ -2,6 +2,8 @@ import XlsxTemplate from './excel_module';
 import ab from 'to-array-buffer';
 import { SafeMap } from './utils';
 
+const delimiters = { start: '{{', end: '}}' };
+
 class TemplateContainer {
     pulled_at: number;
     template: XlsxTemplate;
@@ -11,7 +13,7 @@ class TemplateContainer {
     constructor(pulled_at: number, data: Buffer) {
         this.data = data;
         this.pulled_at = pulled_at;
-        this.template = new XlsxTemplate(data);
+        this.template = new XlsxTemplate(data, delimiters);
         this.placeHolders = this.template.getAllPlaceholders();
     }
 };
@@ -34,7 +36,7 @@ class templateDB {
     }
 
     renderTemplate = (filename: string, data: any) => {
-        const template = new XlsxTemplate(this.templates.get(filename).data);
+        const template = new XlsxTemplate(this.templates.get(filename).data, delimiters);
         template.sheets.forEach((sheet: { id: number | string; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
     }

@@ -27,7 +27,7 @@ const SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDoc
 const HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
 
-const defaultDelimiters = {start:'${', end:'}'};
+const defaultDelimiters = { start: '${', end: '}' };
 
 /**
  * 
@@ -37,7 +37,7 @@ const defaultDelimiters = {start:'${', end:'}'};
 const extractPlaceholders = (string, delimiters) => {
     // Yes, that's right. It's a bunch of brackets and question marks and stuff.
     // const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
-    const {start, end} = delimiters;
+    const { start, end } = delimiters;
     const re = new RegExp(quoteRegex(start) + '(?:(.+?):)?(.+?)(?:\\.(.+?))?' + quoteRegex(end), 'g');
 
     let match = null
