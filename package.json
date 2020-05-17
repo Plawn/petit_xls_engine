@@ -5,16 +5,15 @@
   "main": "start.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node build/start.js 3001 config.yaml \"touch test_pid\"",
+    "start": "tsc && node build/start.js 3001",
     "build": "tsc",
-    "build:prod":"CI=true tsc"
+    "build:prod": "CI=true tsc"
   },
   "author": "Plawn",
   "license": "ISC",
   "devDependencies": {
     "@types/blob-to-buffer": "^1.2.0",
     "@types/express": "^4.17.1",
-    "@types/js-yaml": "^3.12.1",
     "@types/jszip": "^3.1.6",
     "@types/minio": "^7.0.3",
     "@types/mz": "0.0.32",
@@ -22,11 +21,11 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
+    "@types/elementtree": "^0.1.0",
     "blob-to-buffer": "^1.2.8",
     "elementtree": "^0.1.7",
     "express": "^4.17.1",
     "is-blob": "^2.0.1",
-    "js-yaml": "^3.13.1",
     "jszip": "^2.6",
     "minio": "^7.0.12",
     "mz": "^2.7.0",
