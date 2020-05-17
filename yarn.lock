@@ -40,6 +40,11 @@
   dependencies:
     "@types/node" "*"
 
+"@types/elementtree@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@types/elementtree/-/elementtree-0.1.0.tgz#0bd4e68b77698ada0cf22240fd70a59ff5f7d783"
+  integrity sha512-EOSadl5+bw5i2umsJPXvCHSOXRlXha2et+2Wgdog66KbSVhT4pofRbSg6AbKkPEVO9mZusfcMZb5+HfJjpbLtA==
+
 "@types/express-serve-static-core@*":
   version "4.16.10"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.16.10.tgz#3c1313c6e6b75594561b473a286f016a9abf2132"
@@ -56,11 +61,6 @@
     "@types/body-parser" "*"
     "@types/express-serve-static-core" "*"
     "@types/serve-static" "*"
-
-"@types/js-yaml@^3.12.1":
-  version "3.12.1"
-  resolved "https://registry.yarnpkg.com/@types/js-yaml/-/js-yaml-3.12.1.tgz#5c6f4a1eabca84792fbd916f0cb40847f123c656"
-  integrity sha512-SGGAhXLHDx+PK4YLNcNGa6goPf9XRWQNAUUbffkwVGGXIxmDKWyGGL4inzq2sPmExu431Ekb9aEMn9BkPqEYFA==
 
 "@types/jszip@^3.1.6":
   version "3.1.6"

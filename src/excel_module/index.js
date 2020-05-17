@@ -17,7 +17,8 @@ import {
     joinRange,
     splitRange,
     replaceChildren,
-    getCurrentRow
+    getCurrentRow,
+    quoteRegex
 } from "./utils";
 
 const DOCUMENT_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument";
@@ -26,9 +27,18 @@ const SHARED_STRINGS_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDoc
 const HYPERLINK_RELATIONSHIP = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink";
 
 
-const extractPlaceholders = string => {
+const defaultDelimiters = { start: '${', end: '}' };
+
+/**
+ * 
+ * @param {string} string 
+ * @param {{start:string;end:string}} delimiters
+ */
+const extractPlaceholders = (string, delimiters) => {
     // Yes, that's right. It's a bunch of brackets and question marks and stuff.
-    const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
+    // const re = /\${(?:(.+?):)?(.+?)(?:\.(.+?))?}/g;
+    const { start, end } = delimiters;
+    const re = new RegExp(quoteRegex(start) + '(?:(.+?):)?(.+?)(?:\\.(.+?))?' + quoteRegex(end), 'g');
 
     let match = null
     let matches = [];
@@ -114,7 +124,7 @@ const cloneElement = (element, recursive) => {
      * or call `loadTemplate()` later.
      */
 export default class Workbook {
-    constructor(data) {
+    constructor(data, delimiters) {
 
         this.archive = null;
         this.sharedStrings = [];
@@ -122,6 +132,7 @@ export default class Workbook {
         this.sheets = [];
         this.allPlaceholders = [];
         this.readPlaceholders = false;
+        this.delimiters = delimiters || defaultDelimiters;
         if (data) {
             this.loadTemplate(data);
         }
@@ -277,13 +288,13 @@ export default class Workbook {
         let totalColumnsInserted = 0;
         const namedTables = this.loadTables(sheet.root, sheet.filename);
         const rows = [];
-        sheetData.findall("row").forEach(function (row) {
+        sheetData.findall("row").forEach(row => {
             row.attrib.r = currentRow = getCurrentRow(row, totalRowsInserted);
             rows.push(row);
             const cells = [];
             let cellsInserted = 0;
             const newTableRows = [];
-            row.findall("c").forEach(function (cell) {
+            row.findall("c").forEach(cell => {
                 let appendCell = true;
                 cell.attrib.r = self.getCurrentCell(cell, currentRow, cellsInserted);
                 // If c[@t="s"] (string column), look up /c/v@text as integer in
@@ -297,7 +308,7 @@ export default class Workbook {
                         return;
                     }
                     // Loop over placeholders
-                    extractPlaceholders(string).forEach(placeholder => {
+                    extractPlaceholders(string, this.delimiters).forEach(placeholder => {
                         // Only substitute things for which we have a substitution
                         let substitution = _get(substitutions, placeholder.name, '');
                         let newCellsInserted = 0;
@@ -523,7 +534,7 @@ export default class Workbook {
                 let target = relationship.attrib.Target;
                 //Double-decode due to excel double encoding url placeholders
                 target = decodeURI(decodeURI(target));
-                extractPlaceholders(target).forEach(placeholder => {
+                extractPlaceholders(target, this.delimiters).forEach(placeholder => {
                     const substitution = substitutions[placeholder.name];
                     if (substitution === undefined) {
                         return;
@@ -558,7 +569,7 @@ export default class Workbook {
                     if (s === undefined) {
                         return;
                     }
-                    const res = extractPlaceholders(s).map(p => p.placeholder.slice(2, -1));
+                    const res = extractPlaceholders(s, this.delimiters).map(p => p.placeholder.slice(2, -1));
                     if (res.length > 0) {
                         placeholders.push(...res);
                     }
@@ -592,7 +603,7 @@ export default class Workbook {
                 col.attrib.id = Number(idx).toString();
                 newColumns.push(col);
                 const name = col.attrib.name;
-                extractPlaceholders(name).forEach(placeholder => {
+                extractPlaceholders(name, this.delimiters).forEach(placeholder => {
                     var substitution = substitutions[placeholder.name];
                     if (substitution === undefined) {
                         return;
