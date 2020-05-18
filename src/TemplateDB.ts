@@ -2,7 +2,12 @@ import XlsxTemplate from './excel_module';
 import ab from 'to-array-buffer';
 import { SafeMap } from './utils';
 
-const delimiters = { start: '{{', end: '}}' };
+type delimitersType = {
+    start: string;
+    end: string;
+};
+
+const delimiters: delimitersType = { start: '{{', end: '}}' };
 
 class TemplateContainer {
     pulled_at: number;

@@ -71,7 +71,7 @@ app.post('/load_templates', asyncMiddleware(async (req, res) => {
             failed.push({ template_name: element.exposed_as });
         }
     }
-    console.log('loaded templates', { success, failed });
+    console.log('loaded templates', success );
     res.send({ success, failed });
 }));
 
