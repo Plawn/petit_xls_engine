@@ -112,7 +112,7 @@ const toExcelDate = (value) => Number((value.getTime() / (1000 * 60 * 60 * 24)) 
 
 
 // Clone an element. If `recursive` is true, recursively clone children
-const cloneElement = (element, recursive) => {
+const cloneElement = (element, recursive = false) => {
     const newElement = etree.Element(element.tag, element.attrib);
     newElement.text = element.text;
     newElement.tail = element.tail;
@@ -411,7 +411,7 @@ export default class Workbook {
         /**
          * Generate a new binary .xlsx file
          */
-    generate(options) {
+    generate(options = {}) {
             if (!options) {
                 options = {
                     base64: false
