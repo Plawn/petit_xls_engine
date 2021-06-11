@@ -733,6 +733,14 @@ path-to-regexp@0.1.7:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.7.tgz#df604178005f522f15eb4490e7247a1bfaa67f8c"
   integrity sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=
 
+petit_nodejs_publipost_connector@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/petit_nodejs_publipost_connector/-/petit_nodejs_publipost_connector-1.0.0.tgz#3558360289153a2cc6b6fa3840aebf4c00bbdc6b"
+  integrity sha512-DB7HSiAvpnWW43wLFyorXA1M2GDNGpSWK3xkejoC+xZ6nVqwbf+b+nsyGc1U2USpvCysIMWhrUs86phqmHRMpg==
+  dependencies:
+    express "^4.17.1"
+    minio "^7.0.12"
+
 proxy-addr@~2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/proxy-addr/-/proxy-addr-2.0.5.tgz#34cbd64a2d81f4b1fd21e76f9f06c8a45299ee34"

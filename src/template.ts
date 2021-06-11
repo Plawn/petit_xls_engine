@@ -9,7 +9,7 @@ type delimitersType = {
 
 const delimiters: delimitersType = { start: '{{', end: '}}' };
 
-export class ExcelTemplate implements Template {
+export default class ExcelTemplate implements Template {
     data: any;
     placeholders: string[];
     constructor(data: any) {

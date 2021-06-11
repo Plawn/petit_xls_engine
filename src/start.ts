@@ -1,5 +1,5 @@
 import makeConnector from 'petit_nodejs_publipost_connector';
-import { ExcelTemplate } from './TemplateDB';
+import ExcelTemplate from './template';
 
 // Main wrapped for asyncness
 const main = () => {
