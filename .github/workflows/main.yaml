@@ -27,4 +27,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: plawn/petit_pdf_engine:latest
+          tags: plawn/petit_xlsx_engine:latest
