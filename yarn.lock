@@ -974,10 +974,10 @@ path-to-regexp@0.1.7:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.7.tgz#df604178005f522f15eb4490e7247a1bfaa67f8c"
   integrity sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=
 
-petit_nodejs_publipost_connector@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/petit_nodejs_publipost_connector/-/petit_nodejs_publipost_connector-1.0.3.tgz#14a05b3cd84081424f62fffc32e491236ad599a2"
-  integrity sha512-B1U3c98peQ72B5WPOa0KsaRrA7BdMOP+ttxApHdD+CkMYo8d6e5aibUCaq87ymycoWcTPJhRS5Zu9zBRdqakQQ==
+petit_nodejs_publipost_connector@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/petit_nodejs_publipost_connector/-/petit_nodejs_publipost_connector-1.0.4.tgz#b4a6aade029e1544568e338879c759db69d3ba31"
+  integrity sha512-tDfu1/Tp6Vf9xMLz/+PRrbpJ6g9zA6HTNWtwD7nrmDGAjCq49T1L/JsB2x9Zsf8QgGOqyVyq0KmYs1LyfSH22A==
   dependencies:
     "@types/blob-to-buffer" "^1.2.0"
     "@types/express" "^4.17.13"

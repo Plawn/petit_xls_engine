@@ -14,9 +14,11 @@ export default class ExcelTemplate implements Template {
     placeholders: string[];
     constructor(data: any) {
         this.data = data;
-        this.placeholders = new XlsxTemplate(data, delimiters).getAllPlaceholders();
     }
-    render(data: any, options?: any) {
+    async init() {
+        this.placeholders = new XlsxTemplate(this.data, delimiters).getAllPlaceholders();
+    }
+    async render(data: any, options?: any) {
         const template = new XlsxTemplate(this.data, delimiters);
         template.sheets.forEach((sheet: { id: number | string; }) => template.substitute(sheet.id, data));
         return Buffer.from(ab(template.generate()));
